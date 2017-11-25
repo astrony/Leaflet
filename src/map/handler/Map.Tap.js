@@ -47,7 +47,7 @@ L.Map.Tap = L.Handler.extend({
 				this._onUp();
 				this._simulateEvent('contextmenu', first);
 			}
-		}, this), 1000);
+		}, this), this._map.options.longTapTimeout );
 
 		L.DomEvent
 			.on(document, 'touchmove', this._onMove, this)

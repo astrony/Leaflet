@@ -22,7 +22,7 @@ L.Map.DoubleClickZoom = L.Handler.extend({
 		if (map.options.doubleClickZoom === 'center') {
 			map.setZoom(zoom);
 		} else {
-			map.setZoomAround(e.containerPoint, zoom);
+			map.setZoomAround( this._map._zoomCenter || e.containerPoint, zoom);
 		}
 	}
 });

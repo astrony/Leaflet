@@ -44,6 +44,7 @@ L.Map.TouchZoom = L.Handler.extend({
 		L.DomEvent.preventDefault(e);
 	},
 
+	// patched by windy
 	_onTouchMove: function (e) {
 		var map = this._map;
 
@@ -63,7 +64,10 @@ L.Map.TouchZoom = L.Handler.extend({
 		}
 
 		if (!this._moved) {
-			L.DomUtil.addClass(map._mapPane, 'leaflet-touching');
+
+			if(!map._zoomCenter) {
+				L.DomUtil.addClass(map._mapPane, 'leaflet-touching');
+			}	
 
 			map
 			    .fire('movestart')
@@ -79,17 +83,33 @@ L.Map.TouchZoom = L.Handler.extend({
 		L.DomEvent.preventDefault(e);
 	},
 
+	// patched by Windy
 	_updateOnMove: function () {
 		var map = this._map,
-		    origin = this._getScaleOrigin(),
-		    center = map.layerPointToLatLng(origin),
+			origin, 
+			center,
 		    zoom = map.getScaleZoom(this._scale);
 
-		map._animateZoom(center, zoom, this._startCenter, this._scale, this._delta, false, true);
+		if( map._zoomCenter ) {
+
+			zoom = Math.round( zoom )
+
+			if( zoom !== map.getZoom() ) {
+				map.setZoomAround( map._zoomCenter, zoom, { animate: true });
+			}
+
+		}  else {
+		    origin = this._getScaleOrigin();
+			center = map.layerPointToLatLng(origin);
+			map._animateZoom(center, zoom, this._startCenter, this._scale, this._delta, false, true);
+		} 
+
+
 	},
 
+	// patched by Windy
 	_onTouchEnd: function () {
-		if (!this._moved || !this._zooming) {
+		if (!this._moved || !this._zooming ) {
 			this._zooming = false;
 			return;
 		}
@@ -104,16 +124,19 @@ L.Map.TouchZoom = L.Handler.extend({
 		    .off(document, 'touchmove', this._onTouchMove)
 		    .off(document, 'touchend', this._onTouchEnd);
 
-		var origin = this._getScaleOrigin(),
-		    center = map.layerPointToLatLng(origin),
+		if( map._zoomCenter ) {
+			return
+		}    
 
-		    oldZoom = map.getZoom(),
+		var oldZoom = map.getZoom(),
 		    floatZoomDelta = map.getScaleZoom(this._scale) - oldZoom,
 		    roundZoomDelta = (floatZoomDelta > 0 ?
 		            Math.ceil(floatZoomDelta) : Math.floor(floatZoomDelta)),
 
 		    zoom = map._limitZoom(oldZoom + roundZoomDelta),
-		    scale = map.getZoomScale(zoom) / this._scale;
+		    scale = map.getZoomScale(zoom) / this._scale,
+			origin = this._getScaleOrigin(),
+			center = map.layerPointToLatLng(origin);
 
 		map._animateZoom(center, zoom, origin, scale);
 	},

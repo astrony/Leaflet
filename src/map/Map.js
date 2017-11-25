@@ -17,7 +17,11 @@ L.Map = L.Class.extend({
 
 		fadeAnimation: L.DomUtil.TRANSITION && !L.Browser.android23,
 		trackResize: true,
-		markerZoomAnimation: L.DomUtil.TRANSITION && L.Browser.any3d
+		markerZoomAnimation: L.DomUtil.TRANSITION && L.Browser.any3d,
+
+		// patched by Windy
+		// default timeout of long tap
+		longTapTimeout: 500,
 	},
 
 	initialize: function (id, options) { // (HTMLElement or String, Object)
@@ -53,6 +57,18 @@ L.Map = L.Class.extend({
 
 
 	// public methods that modify map state
+
+	// patched by Windy
+	// set center of zoom as x, y
+	setZoomCenter: function(x,y) {
+		this._zoomCenter = L.point(x,y);
+		return this;
+	},
+
+	removeZoomCenter: function() {
+		this._zoomCenter = undefined;
+		return this;	
+	},
 
 	// replaced by animation-powered implementation in Map.PanAnimation.js
 	setView: function (center, zoom) {
